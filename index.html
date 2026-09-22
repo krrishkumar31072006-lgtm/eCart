@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Smart Price Finder</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Smart Price Finder</h1>
+        <p>Find products closest to your target price</p>
+    </header>
+
+    <main>
+
+        <section class="search-section">
+
+            <input
+                type="number"
+                id="priceInput"
+                placeholder="Enter target price"
+            >
+
+            <button id="searchBtn">
+                Search
+            </button>
+
+        </section>
+
+        <section>
+            <h2>Matching Products</h2>
+
+            <div id="results" class="product-container">
+                <!-- Product cards appear here -->
+            </div>
+        </section>
+       <section class="inventory-section">
+
+    <h2>Inventory Range Dashboard</h2>
+
+    <input
+        type="number"
+        id="minPrice"
+        placeholder="Minimum price"
+    >
+
+    <input
+        type="number"
+        id="maxPrice"
+        placeholder="Maximum price"
+    >
+
+    <button id="inventoryBtn">
+        Check Inventory
+    </button>
+
+    <div id="inventorySummary"></div>
+
+    <div id="inventoryResults" class="product-container">
+        <!-- Inventory products will appear here -->
+    </div>
+
+</section>
+    </main>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+
+</body>
+</html>
