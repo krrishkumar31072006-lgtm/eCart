@@ -56,18 +56,126 @@ function displayProducts(products) {
 function viewProduct(productId) {
     alert("Product ID: " + productId);
 }
+// Challenge 6
+
+// ===============================
+// Challenge 6 - Inventory Dashboard
+// ===============================
+
 const minPriceInput = document.getElementById("minPrice");
 const maxPriceInput = document.getElementById("maxPrice");
 const inventoryBtn = document.getElementById("inventoryBtn");
 const inventorySummary = document.getElementById("inventorySummary");
 const inventoryResults = document.getElementById("inventoryResults");
 
+
+// Get all products
+function getAllProducts() {
+
+    let products = [];
+
+    storeData.categories.forEach(category => {
+
+        category.subcategories.forEach(subcategory => {
+
+            products.push(...subcategory.products);
+
+        });
+
+    });
+
+    return products;
+}
+
+
+// Get all products once
+let inventoryProducts = getAllProducts();
+
+
+// Sort products by price ONCE
+inventoryProducts.sort((a, b) => a.price - b.price);
+
+
+// Prefix Sum Array
+let prefixInventory = [0];
+
+for (let i = 0; i < inventoryProducts.length; i++) {
+
+    let inventoryValue =
+        inventoryProducts[i].price *
+        inventoryProducts[i].stock;
+
+    prefixInventory.push(
+        prefixInventory[i] + inventoryValue
+    );
+}
+
+
+// Binary Search: first product >= target
+function findFirstPrice(price) {
+
+    let low = 0;
+    let high = inventoryProducts.length - 1;
+    let answer = inventoryProducts.length;
+
+    while (low <= high) {
+
+        let mid = Math.floor((low + high) / 2);
+
+        if (inventoryProducts[mid].price >= price) {
+
+            answer = mid;
+            high = mid - 1;
+
+        } else {
+
+            low = mid + 1;
+
+        }
+    }
+
+    return answer;
+}
+
+
+// Binary Search: last product <= target
+function findLastPrice(price) {
+
+    let low = 0;
+    let high = inventoryProducts.length - 1;
+    let answer = -1;
+
+    while (low <= high) {
+
+        let mid = Math.floor((low + high) / 2);
+
+        if (inventoryProducts[mid].price <= price) {
+
+            answer = mid;
+            low = mid + 1;
+
+        } else {
+
+            high = mid - 1;
+
+        }
+    }
+
+    return answer;
+}
+
+
+// Check Inventory
 inventoryBtn.addEventListener("click", checkInventory);
 
+
 function checkInventory() {
+
     const minPrice = Number(minPriceInput.value);
     const maxPrice = Number(maxPriceInput.value);
 
+
+    // Validate input
     if (
         minPriceInput.value === "" ||
         maxPriceInput.value === "" ||
@@ -75,40 +183,64 @@ function checkInventory() {
         maxPrice < 0 ||
         minPrice > maxPrice
     ) {
+
         inventorySummary.innerHTML =
             "<p>Please enter a valid price range.</p>";
 
         inventoryResults.innerHTML = "";
+
         return;
     }
 
-    let products = [];
 
-    storeData.categories.forEach(category => {
-        category.subcategories.forEach(subcategory => {
-            products.push(...subcategory.products);
-        });
-    });
+    // Find range using Binary Search
+    const firstIndex = findFirstPrice(minPrice);
+    const lastIndex = findLastPrice(maxPrice);
 
-    const matchingProducts = products.filter(product => {
-        return product.price >= minPrice &&
-               product.price <= maxPrice;
-    });
 
-    let totalInventoryValue = 0;
+    // No products found
+    if (
+        firstIndex === inventoryProducts.length ||
+        firstIndex > lastIndex
+    ) {
 
-    matchingProducts.forEach(product => {
-        totalInventoryValue += product.price * product.stock;
-    });
+        inventorySummary.innerHTML =
+            "<p>No products found in this price range.</p>";
 
+        inventoryResults.innerHTML = "";
+
+        return;
+    }
+
+
+    // Number of matching products
+    const productCount =
+        lastIndex - firstIndex + 1;
+
+
+    // Calculate total inventory value using Prefix Sum
+    const totalInventoryValue =
+        prefixInventory[lastIndex + 1] -
+        prefixInventory[firstIndex];
+
+
+    // Display summary
     inventorySummary.innerHTML = `
-        <p>Matching Products: ${matchingProducts.length}</p>
+        <p>Matching Products: ${productCount}</p>
         <p>Total Inventory Value: ₹${totalInventoryValue}</p>
     `;
 
+
+    // Get matching products
+    const matchingProducts =
+        inventoryProducts.slice(firstIndex, lastIndex + 1);
+
+
+    // Display products
     inventoryResults.innerHTML = "";
 
     matchingProducts.forEach(product => {
+
         const card = document.createElement("div");
 
         card.className = "product-card";
@@ -121,5 +253,6 @@ function checkInventory() {
         `;
 
         inventoryResults.appendChild(card);
+
     });
 }
