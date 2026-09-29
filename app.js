@@ -55,6 +55,11 @@ function displayProducts(products) {
 
 function viewProduct(productId) {
     addToRecentlyViewed(productId);
+    if (!currentUserViewed.includes(productId)) {
+        currentUserViewed.push(productId);
+    }
+    lastViewedProductId = productId;
+    showRecommendations();
     alert("Product ID: " + productId);
 }
 // Challenge 6
@@ -302,4 +307,76 @@ function showRecentlyViewed() {
 function clearRecentlyViewed() {
     recentlyViewed = [];
     showRecentlyViewed();
+}
+
+const recommendations = document.getElementById("recommendations");
+const refreshRecommendationsBtn = document.getElementById("refreshRecommendationsBtn");
+const simulatedUsers = {
+    userA: ["p-101", "p-301", "p-302"],
+    userB: ["p-101", "p-301", "p-303"],
+    userC: ["p-101", "p-302", "p-304"],
+    userD: ["p-301", "p-302", "p-601"]
+};
+let currentUserViewed = [];
+let lastViewedProductId = null;
+
+refreshRecommendationsBtn.addEventListener("click", showRecommendations);
+
+function showRecommendations() {
+    recommendations.innerHTML = "";
+
+    if (lastViewedProductId === null) {
+        recommendations.textContent =
+            "No recommendations available. View a product to get started.";
+        return;
+    }
+
+    const productCounts = {};
+
+    Object.values(simulatedUsers).forEach(userViews => {
+        if (userViews.includes(lastViewedProductId)) {
+            userViews.forEach(productId => {
+                if (
+                    productId !== lastViewedProductId &&
+                    !currentUserViewed.includes(productId)
+                ) {
+                    productCounts[productId] =
+                        (productCounts[productId] || 0) + 1;
+                }
+            });
+        }
+    });
+
+    const products = getAllProducts();
+    const recommendedProducts = Object.keys(productCounts)
+        .map(productId => ({
+            product: products.find(item => item.id === productId),
+            count: productCounts[productId]
+        }))
+        .filter(recommendation => recommendation.product)
+        .sort((first, second) => second.count - first.count)
+        .slice(0, 5);
+
+    if (recommendedProducts.length === 0) {
+        recommendations.textContent =
+            "No recommendations available for this product yet.";
+        return;
+    }
+
+    recommendedProducts.forEach(recommendation => {
+        const product = recommendation.product;
+        const card = document.createElement("div");
+        card.className = "product-card";
+        card.innerHTML = `
+            <h3>${product.name}</h3>
+            <p><strong>Brand:</strong> ${product.brand}</p>
+            <p><strong>Price:</strong> ₹${product.price}</p>
+            <p><strong>Rating:</strong> ⭐ ${product.rating}</p>
+            <p>Viewed together by ${recommendation.count} ${recommendation.count === 1 ? "user" : "users"}</p>
+            <button onclick="viewProduct('${product.id}')">
+                View Product
+            </button>
+        `;
+        recommendations.appendChild(card);
+    });
 }

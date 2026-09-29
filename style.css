@@ -93,6 +93,26 @@ h2 {
 .product-card button:hover {
     background-color: #1e7e34;
 }
+.recommendation-section {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 2px solid #ddd;
+}
+
+#refreshRecommendationsBtn {
+    margin-bottom: 20px;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+#refreshRecommendationsBtn:hover {
+    background-color: #0056b3;
+}
+
 .inventory-section {
     margin-top: 40px;
     padding-top: 20px;
