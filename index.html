@@ -17,6 +17,31 @@
 
     <main>
 
+        <section class="autocomplete-section">
+            <label for="productSearchInput">Search products</label>
+
+            <div class="autocomplete-wrapper">
+                <input
+                    type="search"
+                    id="productSearchInput"
+                    placeholder="Search by name, brand, or tag"
+                    autocomplete="off"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-controls="productSuggestions"
+                    aria-expanded="false"
+                >
+
+                <div
+                    id="productSuggestions"
+                    class="autocomplete-suggestions"
+                    role="listbox"
+                    aria-label="Product suggestions"
+                    hidden
+                ></div>
+            </div>
+        </section>
+
         <section class="search-section">
 
             <input

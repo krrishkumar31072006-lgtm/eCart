@@ -1,6 +1,132 @@
 const priceInput = document.getElementById("priceInput");
 const searchBtn = document.getElementById("searchBtn");
 const results = document.getElementById("results");
+const productSearchInput = document.getElementById("productSearchInput");
+const productSuggestions = document.getElementById("productSuggestions");
+let activeSuggestionIndex = -1;
+
+productSearchInput.addEventListener("input", () => {
+    showProductSuggestions();
+});
+
+productSearchInput.addEventListener("keydown", handleAutocompleteKeydown);
+productSuggestions.addEventListener("click", selectClickedSuggestion);
+
+function showProductSuggestions() {
+    const searchTerm = productSearchInput.value.trim().toLowerCase();
+    productSuggestions.innerHTML = "";
+    activeSuggestionIndex = -1;
+    productSearchInput.removeAttribute("aria-activedescendant");
+
+    if (searchTerm === "") {
+        hideProductSuggestions();
+        return;
+    }
+
+    const matchingProducts = getAllProducts().filter(product => {
+        const nameMatches = product.name.toLowerCase().includes(searchTerm);
+        const brandMatches = product.brand.toLowerCase().includes(searchTerm);
+        const tagsMatch = (product.tags || []).some(tag =>
+            tag.toLowerCase().includes(searchTerm)
+        );
+
+        return nameMatches || brandMatches || tagsMatch;
+    });
+
+    const displayedProducts = [];
+    const seenProductIds = new Set();
+
+    matchingProducts.forEach(product => {
+        if (!seenProductIds.has(product.id) && displayedProducts.length < 8) {
+            seenProductIds.add(product.id);
+            displayedProducts.push(product);
+        }
+    });
+
+    if (displayedProducts.length === 0) {
+        const emptyMessage = document.createElement("div");
+        emptyMessage.className = "suggestion-empty";
+        emptyMessage.setAttribute("role", "status");
+        emptyMessage.textContent = "No products found";
+        productSuggestions.appendChild(emptyMessage);
+    } else {
+        displayedProducts.forEach((product, index) => {
+            const suggestion = document.createElement("button");
+            suggestion.type = "button";
+            suggestion.className = "suggestion-option";
+            suggestion.id = `product-suggestion-${index}`;
+            suggestion.dataset.productId = product.id;
+            suggestion.setAttribute("role", "option");
+            suggestion.setAttribute("aria-selected", "false");
+            suggestion.textContent = `${product.name} - ${product.brand}`;
+            productSuggestions.appendChild(suggestion);
+        });
+    }
+
+    productSuggestions.hidden = false;
+    productSearchInput.setAttribute("aria-expanded", "true");
+}
+
+function handleAutocompleteKeydown(event) {
+    const suggestions = productSuggestions.querySelectorAll(".suggestion-option");
+
+    if (event.key === "ArrowDown" && suggestions.length > 0) {
+        event.preventDefault();
+        activeSuggestionIndex =
+            (activeSuggestionIndex + 1) % suggestions.length;
+        updateActiveSuggestion(suggestions);
+    } else if (event.key === "ArrowUp" && suggestions.length > 0) {
+        event.preventDefault();
+        activeSuggestionIndex = activeSuggestionIndex <= 0
+            ? suggestions.length - 1
+            : activeSuggestionIndex - 1;
+        updateActiveSuggestion(suggestions);
+    } else if (event.key === "Enter" && activeSuggestionIndex >= 0) {
+        event.preventDefault();
+        selectProductSuggestion(suggestions[activeSuggestionIndex]);
+    } else if (event.key === "Escape") {
+        hideProductSuggestions();
+    }
+}
+
+function updateActiveSuggestion(suggestions) {
+    suggestions.forEach((suggestion, index) => {
+        const isActive = index === activeSuggestionIndex;
+        suggestion.setAttribute("aria-selected", isActive);
+    });
+
+    const activeSuggestion = suggestions[activeSuggestionIndex];
+    productSearchInput.setAttribute("aria-activedescendant", activeSuggestion.id);
+    activeSuggestion.scrollIntoView({ block: "nearest" });
+}
+
+function selectClickedSuggestion(event) {
+    const suggestion = event.target.closest(".suggestion-option");
+
+    if (suggestion) {
+        selectProductSuggestion(suggestion);
+    }
+}
+
+function selectProductSuggestion(suggestion) {
+    const product = getAllProducts().find(
+        item => item.id === suggestion.dataset.productId
+    );
+
+    if (product) {
+        productSearchInput.value = product.name;
+        hideProductSuggestions();
+        productSearchInput.focus();
+    }
+}
+
+function hideProductSuggestions() {
+    productSuggestions.hidden = true;
+    productSuggestions.innerHTML = "";
+    activeSuggestionIndex = -1;
+    productSearchInput.setAttribute("aria-expanded", "false");
+    productSearchInput.removeAttribute("aria-activedescendant");
+}
 
 searchBtn.addEventListener("click", findProducts);
 
