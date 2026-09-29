@@ -44,9 +44,9 @@ function displayProducts(products) {
             <p><strong>Price:</strong> ₹${product.price}</p>
             <p><strong>Rating:</strong> ⭐ ${product.rating}</p>
 
-            <button onclick="viewProduct('${product.id}')">
-                View Product
-            </button>
+           <button onclick="viewProduct('${product.id}')">
+    View Product
+</button>
         `;
 
         results.appendChild(card);
@@ -54,6 +54,7 @@ function displayProducts(products) {
 }
 
 function viewProduct(productId) {
+    addToRecentlyViewed(productId);
     alert("Product ID: " + productId);
 }
 // Challenge 6
@@ -250,9 +251,55 @@ function checkInventory() {
             <p><strong>Brand:</strong> ${product.brand}</p>
             <p><strong>Price:</strong> ₹${product.price}</p>
             <p><strong>Stock:</strong> ${product.stock}</p>
+            <button onclick="viewProduct('${product.id}')">
+                View Product
+            </button>
         `;
 
         inventoryResults.appendChild(card);
 
     });
+}
+let recentlyViewed = [];
+
+const recentProducts = document.getElementById("recentProducts");
+const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+
+clearHistoryBtn.addEventListener("click", clearRecentlyViewed);
+
+function addToRecentlyViewed(productId) {
+    recentlyViewed = recentlyViewed.filter(id => id !== productId);
+    recentlyViewed.unshift(productId);
+    recentlyViewed = recentlyViewed.slice(0, 5);
+    showRecentlyViewed();
+}
+
+function showRecentlyViewed() {
+    recentProducts.innerHTML = "";
+
+    if (recentlyViewed.length === 0) {
+        recentProducts.textContent = "No recently viewed products.";
+        return;
+    }
+
+    recentlyViewed.forEach(productId => {
+        const product = getAllProducts().find(item => item.id === productId);
+
+        if (product) {
+            const card = document.createElement("div");
+            card.className = "product-card";
+            card.innerHTML = `
+                <h3>${product.name}</h3>
+                <p><strong>Brand:</strong> ${product.brand}</p>
+                <p><strong>Price:</strong> ₹${product.price}</p>
+                <p><strong>Rating:</strong> ⭐ ${product.rating}</p>
+            `;
+            recentProducts.appendChild(card);
+        }
+    });
+}
+
+function clearRecentlyViewed() {
+    recentlyViewed = [];
+    showRecentlyViewed();
 }
